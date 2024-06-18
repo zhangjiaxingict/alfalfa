@@ -353,7 +353,7 @@ public:
 
     return true;
   }
-
+        
   bool operator!=( const TwoDSubRange< T, sub_width, sub_height > & other ) const
   {
     return not operator==( other );

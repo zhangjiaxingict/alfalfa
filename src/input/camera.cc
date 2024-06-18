@@ -70,7 +70,8 @@ Camera::Camera( const uint16_t width, const uint16_t height,
   format.fmt.pix.width = width;
   format.fmt.pix.height = height;
 
-  SystemCall( "setting format", ioctl( camera_fd_.fd_num(), VIDIOC_S_FMT, &format ) );
+  int err = SystemCall( "setting format", ioctl( camera_fd_.fd_num(), VIDIOC_S_FMT, &format ) );
+   printf(" setting format strerror(errno):%s\n",strerror(errno));
 
   if ( format.fmt.pix.pixelformat != pixel_format or
        format.fmt.pix.width != width_ or
@@ -84,7 +85,13 @@ Camera::Camera( const uint16_t width, const uint16_t height,
   buf_request.memory = V4L2_MEMORY_MMAP;
   buf_request.count = NUM_BUFFERS;
 
-  SystemCall( "buffer request", ioctl( camera_fd_.fd_num(), VIDIOC_REQBUFS, &buf_request ) );
+  err =SystemCall( "buffer request", ioctl( camera_fd_.fd_num(), VIDIOC_REQBUFS, &buf_request ) );
+  if(err == -1)
+  {
+    printf("strerror(errno):%s\n",strerror(errno));
+  }
+
+  printf("strerror(errno):%s\n",strerror(errno));
 
   if ( buf_request.count != NUM_BUFFERS ) {
     throw runtime_error( "couldn't get enough video4linux2 buffers" );

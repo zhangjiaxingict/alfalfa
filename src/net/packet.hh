@@ -54,7 +54,7 @@ private:
   std::string payload_;
 
 public:
-  static constexpr size_t MAXIMUM_PAYLOAD = 1400;
+  static constexpr size_t MAXIMUM_PAYLOAD = 1000;
 
   static std::string put_header_field( const uint16_t n );
   static std::string put_header_field( const uint32_t n );
