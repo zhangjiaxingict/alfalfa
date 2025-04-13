@@ -62,6 +62,7 @@ Packet::Packet( const vector<uint8_t> & whole_frame,
                 const uint32_t target_state,
                 const uint32_t frame_no,
                 const uint32_t block_no,//add 2 extra element
+                const uint32_t first_frame_no_in_block,//add 6 extra element
                 const uint32_t protected_pkt_num_in_this_block,//add 3 extra element
                 const uint32_t protected_frame_num_in_this_block,//add 4 extra element
                 const uint32_t fec_pkts_in_this_block,//add 5 extra element
@@ -76,6 +77,7 @@ Packet::Packet( const vector<uint8_t> & whole_frame,
     target_state_( target_state ),
     frame_no_( frame_no ),
     block_no_(block_no),//
+    first_frame_no_in_block_(first_frame_no_in_block),
     protected_pkt_num_in_this_block_(protected_pkt_num_in_this_block),//
     protected_frame_num_in_this_block_(protected_frame_num_in_this_block),//
     fec_pkts_in_this_block_(fec_pkts_in_this_block),//
@@ -107,15 +109,30 @@ Packet::Packet( const Chunk & str )
     target_state_( str( 8, 4 ).le32() ),
     frame_no_( str( 12, 4 ).le32() ),
     block_no_(str( 16, 4 ).le32()),//
-    protected_pkt_num_in_this_block_(str( 20, 2 ).le32()),
-    protected_frame_num_in_this_block_(str( 22, 2 ).le32()),
-    fec_pkts_in_this_block_(str( 24, 2 ).le32()),//
-    fragment_no_( str( 26, 2 ).le16() ),
-    block_index_( str( 28, 2 ).le16() ),
-    fragments_in_this_frame_( str( 30, 2 ).le16() ),
-    time_since_last_( str( 32, 4 ).le32() ),
-    payload_( str( 36 ).to_string() )
-{
+    first_frame_no_in_block_(str( 20, 4 ).le32()),//
+    protected_pkt_num_in_this_block_(str( 24, 2 ).le16()),
+    protected_frame_num_in_this_block_(str( 26, 2 ).le16()),
+    fec_pkts_in_this_block_(str( 28, 2 ).le16()),//
+    fragment_no_( str( 30, 2 ).le16() ),
+    block_index_( str( 32, 2 ).le16() ),
+    fragments_in_this_frame_( str( 34, 2 ).le16() ),
+    time_since_last_( str( 36, 4 ).le32() ),
+    payload_( str( 40 ).to_string() )
+{ 
+  // printf("fragment_no_:%u,fragments_in_this_frame=%u\n",fragment_no_,fragments_in_this_frame_);
+  // printf("is_fec_pkt_: %u\n", is_fec_pkt_);
+  // printf("connection_id_: %u\n", connection_id_);
+  // printf("source_state_: %u\n", source_state_);
+  // printf("target_state_: %u\n", target_state_);
+  // printf("frame_no_: %u\n", frame_no_);
+  // printf("block_no_: %u\n", block_no_);
+  // printf("protected_pkt_num_in_this_block_: %u\n", protected_pkt_num_in_this_block_);
+  // printf("protected_frame_num_in_this_block_: %u\n", protected_frame_num_in_this_block_);
+  // printf("fec_pkts_in_this_block_: %u\n", fec_pkts_in_this_block_);
+  // printf("fragment_no_: %u\n", fragment_no_);
+  // printf("block_index_: %u\n", block_index_);
+  // printf("fragments_in_this_frame_: %u\n", fragments_in_this_frame_);
+  // printf("time_since_last_: %u\n", time_since_last_);
   if ( fragment_no_ >= fragments_in_this_frame_ ) {
     throw runtime_error( "invalid packet: fragment_no_ >= fragments_in_this_frame" );
   }
@@ -134,6 +151,7 @@ Packet::Packet()
     target_state_(),
     frame_no_(),
     block_no_(),//
+    first_frame_no_in_block_(),//
     protected_pkt_num_in_this_block_(),
     protected_frame_num_in_this_block_(),
     fec_pkts_in_this_block_(),//
@@ -154,14 +172,15 @@ string Packet::to_string() const
        + put_header_field( source_state_ )
        + put_header_field( target_state_ )
        + put_header_field( frame_no_ )
+       + put_header_field( block_no_ )//
+       + put_header_field( first_frame_no_in_block_ )//
+       + put_header_field( protected_pkt_num_in_this_block_ )
+       + put_header_field( protected_frame_num_in_this_block_ )
+       + put_header_field( fec_pkts_in_this_block_ )//
        + put_header_field( fragment_no_ )
        + put_header_field( block_index_ )
        + put_header_field( fragments_in_this_frame_ )//when fec pkt , it stands for num of fec pkts in this fec-block
        + put_header_field( time_since_last_ )
-       + put_header_field( block_no_ )//
-       + put_header_field( protected_pkt_num_in_this_block_ )
-       + put_header_field( protected_frame_num_in_this_block_ )
-       + put_header_field( fec_pkts_in_this_block_ )//
        + payload_;
 }
 
@@ -176,6 +195,7 @@ FecBlock::FecBlock( const uint16_t connection_id,
                     const uint32_t source_state,
                     const uint32_t target_state,
                     const uint32_t block_no,//
+                    const uint32_t first_frame_no,//
                     const uint32_t time_to_next_frame,
                     const uint16_t protected_pkt_num,// in this block
                     const uint16_t protected_frame_num,
@@ -186,6 +206,7 @@ FecBlock::FecBlock( const uint16_t connection_id,
     source_state_( source_state ),
     target_state_( target_state ),
     block_no_( block_no ),//
+    first_frame_no_( first_frame_no ),//
     protected_pkts_in_this_block_( protected_pkt_num ),//target pkt num ,protected_pkts_in_this_block_ to fix
     frame_num_in_this_block_(protected_frame_num),
     fec_pkts_in_this_block_(fec_pkts_in_this_block),//
@@ -199,7 +220,7 @@ FecBlock::FecBlock( const uint16_t connection_id,
   for ( uint16_t fragment_no = 0; next_fragment_start < fec_block.size();
         fragment_no++ ) {
     fec_pkts_.emplace_back( fec_block, 1, connection_id, source_state_, target_state_,
-                            0, block_no, protected_pkts_in_this_block_ ,frame_num_in_this_block_,
+                            0, block_no, first_frame_no_, protected_pkts_in_this_block_ ,frame_num_in_this_block_,
                             fec_pkts_in_this_block_, fragment_no, pkt_count_in_current_block, 0, next_fragment_start );//通过FragmentedFrame构造pkt：可能构造media_pkt或fec_pkt
     pkt_count_in_current_block++;
   }//1 in first line stands for fec pkt
@@ -224,6 +245,7 @@ FecBlock::FecBlock( const uint16_t connection_id,
     target_state_( packet.target_state() ),
     // fec setting
     block_no_( packet.block_no() ),
+    first_frame_no_( packet.first_frame_num_in_block() ),
     protected_pkts_in_this_block_( packet.protected_pkt_num_in_this_block() ), //for media pkt ,it's 0
     frame_num_in_this_block_(packet.protected_frame_num_in_this_block()), //for media pkt ,it's 0
     //fec_pkts_in_this_block_( packet.fragments_in_this_frame() ),//都是可以的
@@ -243,30 +265,31 @@ FecBlock::FecBlock( const uint16_t connection_id,
 }
 
 void FecBlock::sanity_check( const Packet & packet ) const {
+  // TODO : FEC 的 sanity_check
   if ( packet.connection_id() != connection_id_ ) {
     cerr << packet.connection_id() << " vs. " << connection_id_ << "\n";
     throw runtime_error( "invalid packet, connection_id mismatch" );
   }
 
-  if ( packet.source_state() != source_state_ ) {
-    throw runtime_error( "invalid packet, source_state mismatch" );
-  }
+  // if ( packet.source_state() != source_state_ ) {
+  //   throw runtime_error( "invalid packet, source_state mismatch" );
+  // }
 
-  if ( packet.target_state() != target_state_ ) {
-    throw runtime_error( "invalid packet, source_state mismatch" );
-  }
+  // if ( packet.target_state() != target_state_ ) {
+  //   throw runtime_error( "invalid packet, source_state mismatch" );
+  // }
 
-  if ( packet.fragments_in_this_frame() != fec_pkts_in_this_block_ ) {
-    throw runtime_error( "invalid packet, fragments_in_this_frame mismatch" );
-  }
+  // if ( packet.fragments_in_this_frame() != fec_pkts_in_this_block_ ) {
+  //   throw runtime_error( "invalid packet, fragments_in_this_frame mismatch" );
+  // }
 
-  if ( packet.block_no() != block_no_ ) {
-    throw runtime_error( "invalid packet, block_no mismatch" );
-  }
+  // if ( packet.block_no() != block_no_ ) {
+  //   throw runtime_error( "invalid packet, block_no mismatch" );
+  // }
 
-  if ( packet.fragment_no() >= fec_pkts_in_this_block_ ) {
-    throw runtime_error( "invalid packet, fragment_no >= fec_pkts_in_this_block_" );
-  }
+  // if ( packet.fragment_no() >= fec_pkts_in_this_block_ ) {
+  //   throw runtime_error( "invalid packet, fragment_no >= fec_pkts_in_this_block_" );
+  // }
 }
 
 /* read a new packet */
@@ -275,22 +298,29 @@ void FecBlock::add_packet( const Packet & packet )
   sanity_check( packet );
 
   // if(packet.is_fec_pkt()){}
+  if(packet.block_index() >= block_pkts_.size()){//block_pkts_[ packet.block_index() ] == nullptr
+    block_pkts_.resize(packet.block_index() + 1);
+  }
 
   if ( not block_pkts_[ packet.block_index() ].valid() ) {//check if recv the same pkt in block again
     // remaining_pkts_to_fix_--;
     recved_pkts_num_++;
     //新进入的包更新fecblock内的参数设定，只在接收到fec包时更新
     if(packet.is_fec_pkt()){
-      // fec_pkts_( packet.fec_pkts_in_this_block() )
+      // fec_pkts_( packet.fec_pkts_in_this_block() );
       if(protected_pkts_in_this_block_==0 && frame_num_in_this_block_==0 && fec_pkts_in_this_block_==0){
         protected_pkts_in_this_block_ = packet.protected_pkt_num_in_this_block();
         frame_num_in_this_block_ = packet.protected_frame_num_in_this_block();
         fec_pkts_in_this_block_ = packet.fec_pkts_in_this_block();
+        printf("protected_pkts_in_this_block_=%u",protected_pkts_in_this_block_);
+        printf("frame_num_in_this_block_=%u",frame_num_in_this_block_);
+        printf("fec_pkts_in_this_block_=%u",fec_pkts_in_this_block_);
         fec_pkts_.resize(packet.fec_pkts_in_this_block());//fec status update，直接更新到完整的block size
+        block_pkts_.resize(packet.fec_pkts_in_this_block() + packet.protected_pkt_num_in_this_block());
       }
       else{
         //media pkt , update fdec status temply
-        fec_pkts_.resize(packet.block_index());//收一个开一个 2025.4.9，todo ：do it in a more graceful way
+        block_pkts_.resize(packet.block_index());//收一个开一个 2025.4.9，todo ：do it in a more graceful way
       }
     }
     //更新fecblock的
@@ -314,6 +344,9 @@ void FecBlock::add_packet( const Packet & packet )
 /* complete? */
 bool FecBlock::complete() const
 {
+  printf("protected_pkts_in_this_block_=%u",protected_pkts_in_this_block_);
+  printf("frame_num_in_this_block_=%u",frame_num_in_this_block_);
+  printf("fec_pkts_in_this_block_=%u",fec_pkts_in_this_block_);
   //first check fecblock valid? : p/f num !=0
   if(protected_pkts_in_this_block_==0 || frame_num_in_this_block_==0 || fec_pkts_in_this_block_==0)
   {
@@ -323,7 +356,7 @@ bool FecBlock::complete() const
   else
   {
     //try to decode
-    printf("fec try to fix check");
+    printf("fec try to fix check:recved_pkts_num_%u,protected_pkts_in_this_block_%u\n",recved_pkts_num_,protected_pkts_in_this_block_);
     return recved_pkts_num_ >= protected_pkts_in_this_block_;
   }
 }
@@ -344,6 +377,7 @@ FragmentedFrame::FragmentedFrame( const uint16_t connection_id,
                                   const uint32_t target_state,
                                   const uint32_t frame_no,
                                   const uint32_t block_no,//new added
+                                  const uint32_t first_frame_no,//new added,0
                                   const uint16_t protected_pkt_num_in_this_block,//new added,0 for media pkt
                                   uint16_t pkt_count_in_current_block,//stand for how many pkts have in this block inserted by former frames
                                   const uint32_t time_since_last,
@@ -365,7 +399,7 @@ FragmentedFrame::FragmentedFrame( const uint16_t connection_id,
   for ( uint16_t fragment_no = 0; next_fragment_start < whole_frame.size();
         fragment_no++ ) {
     fragments_.emplace_back( whole_frame, is_fec_pkt, connection_id, source_state_,
-                             target_state_, frame_no, block_no, protected_pkt_num_in_this_block,//packet类多了4个新的成员
+                             target_state_, frame_no, block_no, first_frame_no, protected_pkt_num_in_this_block,//packet类多了4个新的成员
                              protected_frame_num_in_this_block, fec_pkts_in_this_block,
                              fragment_no, pkt_count_in_current_block, 0, next_fragment_start );//通过FragmentedFrame构造pkt：可能构造media_pkt或fec_pkt
     pkt_count_in_current_block++;

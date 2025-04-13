@@ -49,6 +49,7 @@ private:
   uint32_t target_state_;
   uint32_t frame_no_;
   uint32_t block_no_;
+  uint32_t first_frame_no_in_block_;
   uint16_t protected_pkt_num_in_this_block_;
   uint16_t protected_frame_num_in_this_block_;
   uint16_t fec_pkts_in_this_block_;
@@ -76,6 +77,7 @@ public:
   uint16_t block_index() const { return block_index_; }
   uint16_t is_fec_pkt() const { return is_fec_pkt_; }
   uint32_t block_no() const { return block_no_; }
+  uint32_t first_frame_num_in_block() const { return first_frame_no_in_block_; }
   uint16_t fragments_in_this_frame() const { return fragments_in_this_frame_; }
   uint16_t protected_pkt_num_in_this_block() const { return protected_pkt_num_in_this_block_; }
   uint16_t protected_frame_num_in_this_block() const { return protected_frame_num_in_this_block_; }
@@ -91,6 +93,7 @@ public:
           const uint32_t target_state,
           const uint32_t frame_no,
           const uint32_t block_no,
+          const uint32_t first_frame_num_in_block,
           const uint32_t protected_pkt_num_in_this_block,
           const uint32_t protected_frame_num_in_this_block,
           const uint32_t fec_pkts_in_this_block,
@@ -121,6 +124,7 @@ private:
   uint32_t target_state_;
 
   uint32_t block_no_;//
+  uint32_t first_frame_no_;
   uint16_t protected_pkts_in_this_block_;//目标应收 protected_pkts_in_this_block || least_pkts_to_fix_in_this_block_
   uint16_t frame_num_in_this_block_;
   uint16_t fec_pkts_in_this_block_;//本block内所添加的fec个数
@@ -138,6 +142,7 @@ public:
                    const uint32_t source_state,
                    const uint32_t target_state,
                    const uint32_t block_no,
+                   const uint32_t first_frame_no,
                    const uint32_t time_to_next_frame,
                    const uint16_t protected_pkt_num,
                    const uint16_t protected_frame_num,
@@ -165,6 +170,8 @@ public:
   uint32_t target_state() const { return target_state_; }
   
   uint32_t block_no() const { return block_no_; }
+  uint32_t first_frame_no() const { return first_frame_no_; }
+  uint32_t frame_num_in_this_block() const { return frame_num_in_this_block_; }
   uint16_t fragments_in_this_frame() const { return protected_pkts_in_this_block_; }
   std::string frame() const;
   std::string partial_frame() const;
@@ -180,6 +187,7 @@ public:
       source_state_( other.source_state_ ),
       target_state_( other.target_state_ ),
       block_no_( other.block_no_ ),
+      first_frame_no_( other.first_frame_no_ ),
       protected_pkts_in_this_block_( other.protected_pkts_in_this_block_ ),
       frame_num_in_this_block_( other.frame_num_in_this_block_ ),
       fec_pkts_in_this_block_( other.fec_pkts_in_this_block_ ),
@@ -209,6 +217,7 @@ public:
                    const uint32_t target_state,
                    const uint32_t frame_no,
                    const uint32_t block_no,//new added
+                   const uint32_t first_frame_no,//new added
                    const uint16_t protected_pkt_num_in_this_block,//new added,0 for media pkt
                    uint16_t pkt_count_in_current_block,//stand for how many pkts have in this block inserted by former frames
                    const uint32_t time_to_next_frame,
