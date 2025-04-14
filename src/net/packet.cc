@@ -341,7 +341,7 @@ void FecBlock::add_packet( const Packet & packet )
 //   }
 // }
 
-/* complete? */
+/* check if fec block can be decoded */
 bool FecBlock::complete() const
 {
   printf("protected_pkts_in_this_block_=%u",protected_pkts_in_this_block_);
@@ -511,6 +511,14 @@ void FragmentedFrame::add_packet( const Packet & packet )
   }
 }
 
+/*fec fix a frame*/
+void FragmentedFrame::fix_fragments() {
+  remaining_fragments_ = 0;
+  for (auto& fragment : fragments_) {
+    fragment.setvalid(); //将元素置为有效状态,simulated fec decoding
+    // fragment = reconstructed_packet; //fec decoding
+  }
+}  
 /* send */
 void FragmentedFrame::send( UDPSocket & socket )
 {

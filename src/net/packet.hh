@@ -69,6 +69,7 @@ public:
 
   /* getters */
   bool valid() const { return valid_; }
+  void setvalid() { valid_ = 1; } //for simulated fec decoding
   uint16_t connection_id() const { return connection_id_; }
   uint32_t source_state() const { return source_state_; }
   uint32_t target_state() const { return target_state_; }
@@ -239,6 +240,9 @@ public:
 
   /* read a new packet */
   void add_packet( const Packet & packet );
+  
+  /*fec fix a frame*/
+  void fix_fragments();
 
   /* send */
   void send( UDPSocket & socket );
